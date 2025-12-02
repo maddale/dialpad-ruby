@@ -140,6 +140,7 @@ RSpec.describe Dialpad::Department do
       context 'with departments' do
         let(:departments_data) do
           {
+            'cursor' => 'dept_cursor_789',
             'items' => [
               {
                 'id' => '1234567890123456',
@@ -193,22 +194,24 @@ RSpec.describe Dialpad::Department do
           }
         end
 
-        it 'returns an array of departments' do
+        it 'returns a PaginatedResponse with departments' do
           stub_request(:get, "#{base_url}/departments")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: departments_data.to_json, headers: { 'Content-Type' => 'application/json' })
 
-          departments = described_class.list
+          result = described_class.list
 
-          expect(departments).to be_an(Array)
-          expect(departments.length).to eq(2)
-          expect(departments.first).to be_a(described_class)
-          expect(departments.first.id).to eq('1234567890123456')
-          expect(departments.first.name).to eq('Sales Department')
-          expect(departments.first.availability_status).to eq('open')
-          expect(departments.last.id).to eq('1234567890123457')
-          expect(departments.last.name).to eq('Support Department')
-          expect(departments.last.availability_status).to eq('closed')
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to eq('dept_cursor_789')
+          expect(result.items).to be_an(Array)
+          expect(result.items.length).to eq(2)
+          expect(result.items.first).to be_a(described_class)
+          expect(result.items.first.id).to eq('1234567890123456')
+          expect(result.items.first.name).to eq('Sales Department')
+          expect(result.items.first.availability_status).to eq('open')
+          expect(result.items.last.id).to eq('1234567890123457')
+          expect(result.items.last.name).to eq('Support Department')
+          expect(result.items.last.availability_status).to eq('closed')
         end
 
         it 'passes query parameters to API' do
@@ -226,24 +229,28 @@ RSpec.describe Dialpad::Department do
       end
 
       context 'with no departments' do
-        it 'returns empty array when items is blank' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
           stub_request(:get, "#{base_url}/departments")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-          departments = described_class.list
+          result = described_class.list
 
-          expect(departments).to eq([])
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to be_nil
+          expect(result.items).to eq([])
         end
 
-        it 'returns empty array when items is nil' do
+        it 'returns PaginatedResponse with empty items when items is nil' do
           stub_request(:get, "#{base_url}/departments")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
 
-          departments = described_class.list
+          result = described_class.list
 
-          expect(departments).to eq([])
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to be_nil
+          expect(result.items).to eq([])
         end
       end
     end

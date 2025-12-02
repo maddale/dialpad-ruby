@@ -1,9 +1,10 @@
 module Dialpad
-  class Department < DialpadObject
+  class CallCenter < DialpadObject
     class RequiredAttributeError < Dialpad::DialpadObject::RequiredAttributeError; end
 
     ATTRIBUTES = %i(
-      auto_call_recording
+      advanced_settings
+      alerts
       availability_status
       country
       first_action
@@ -19,9 +20,7 @@ module Dialpad
       phone_numbers
       ring_seconds
       routing_options
-      saturday_hours
       state
-      sunday_hours
       thursday_hours
       timezone
       tuesday_hours
@@ -29,51 +28,44 @@ module Dialpad
       wednesday_hours
     ).freeze
 
-    def operator_users
-      response = Dialpad.client.get("departments/#{id}/operators")
-      return [] if response.body['users'].nil?
-
-      response.body['users'].map { |user| User.new(user) }
-    end
-
     class << self
       include Validations
 
-      # https://developers.dialpad.com/reference/departmentsget
+      # https://developers.dialpad.com/reference/callcentersget
       def retrieve(id = nil)
         validate_required_attribute(id, "ID")
 
-        response = Dialpad.client.get("departments/#{id}")
+        response = Dialpad.client.get("callcenters/#{id}")
         new(response.body)
       end
 
-      # https://developers.dialpad.com/reference/departmentslistall
+      # https://developers.dialpad.com/reference/callcenterslistall
       def list(params = {})
-        response = Dialpad.client.get('departments', params)
+        response = Dialpad.client.get('callcenters', params)
         paginated_response_from(response)
       end
 
-      # https://developers.dialpad.com/reference/departmentscreate
+      # https://developers.dialpad.com/reference/callcenterscreate
       def create(attributes = {})
         validate_required_attributes(attributes, %i(name office_id))
 
-        response = Dialpad.client.post('departments', attributes)
+        response = Dialpad.client.post('callcenters', attributes)
         new(response.body)
       end
 
-      # https://developers.dialpad.com/reference/departmentsupdate
+      # https://developers.dialpad.com/reference/callcentersupdate
       def update(id = nil, attributes = {})
         validate_required_attribute(id, "ID")
 
-        response = Dialpad.client.patch("departments/#{id}", attributes)
+        response = Dialpad.client.patch("callcenters/#{id}", attributes)
         new(response.body)
       end
 
-      # https://developers.dialpad.com/reference/departmentsdelete
+      # https://developers.dialpad.com/reference/callcentersdelete
       def destroy(id = nil)
         validate_required_attribute(id, "ID")
 
-        response = Dialpad.client.delete("departments/#{id}")
+        response = Dialpad.client.delete("callcenters/#{id}")
         new(response.body)
       end
     end

@@ -39,12 +39,7 @@ module Dialpad
       # https://developers.dialpad.com/reference/userslist
       def list(params = {})
         response = Dialpad.client.get('users', params)
-        return [] if response.body['items'].nil?
-
-        structure = {}
-        structure[:cursor] = response.body['cursor'] unless response.body['cursor'].nil?
-        structure[:items] = response.body['items'].map { |item| new(item) }
-        structure
+        paginated_response_from(response)
       end
 
       # https://developers.dialpad.com/reference/usersget
