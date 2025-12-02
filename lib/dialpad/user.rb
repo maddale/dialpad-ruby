@@ -13,6 +13,7 @@ module Dialpad
       do_not_disturb
       emails
       first_name
+      group_details
       id
       image_url
       international_dialing_enabled

@@ -45,7 +45,15 @@ RSpec.describe Dialpad::User do
               'is_default_voicemail' => true,
               'name' => 'default',
               'voicemail_notifications_enabled' => true
-            }
+            },
+            'group_details' => [
+              {
+                'do_not_disturb' => false,
+                'group_id' => '6178959861465088',
+                'group_type' => 'callcenter',
+                'role' => 'operator'
+              }
+            ]
           }
         end
 
@@ -377,7 +385,15 @@ RSpec.describe Dialpad::User do
           is_default_voicemail: true,
           name: 'default',
           voicemail_notifications_enabled: true
-        }
+        },
+        group_details: [
+          {
+            do_not_disturb: false,
+            group_id: '6178959861465088',
+            group_type: 'callcenter',
+            role: 'operator'
+          }
+        ]
       }
     end
 
@@ -437,6 +453,14 @@ RSpec.describe Dialpad::User do
         expect(user.admin_office_ids).to eq(['1234567890123456'])
         expect(user.emails).to eq(['john.doe@example.com'])
         expect(user.phone_numbers).to eq(['+15551234567'])
+        expect(user.group_details).to eq([
+                                           {
+                                             do_not_disturb: false,
+                                             group_id: '6178959861465088',
+                                             group_type: 'callcenter',
+                                             role: 'operator'
+                                           }
+                                         ])
       end
     end
 
@@ -470,6 +494,7 @@ RSpec.describe Dialpad::User do
         expect(user).to respond_to(:date_added)
         expect(user).to respond_to(:date_first_login)
         expect(user).to respond_to(:voicemail)
+        expect(user).to respond_to(:group_details)
       end
 
       it 'raises NoMethodError for undefined attributes' do
