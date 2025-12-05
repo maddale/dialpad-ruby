@@ -161,15 +161,15 @@ RSpec.describe Dialpad::Call do
 
           calls = described_class.list
 
-          expect(calls).to be_an(Array)
-          expect(calls.length).to eq(2)
-          expect(calls.first).to be_a(described_class)
-          expect(calls.first.call_id).to eq(5780678246121472)
-          expect(calls.first.direction).to eq('outbound')
-          expect(calls.first.state).to eq('calling')
-          expect(calls.last.call_id).to eq(5780678246121473)
-          expect(calls.last.direction).to eq('inbound')
-          expect(calls.last.state).to eq('completed')
+          expect(calls).to be_a(Dialpad::PaginatedResponse)
+          expect(calls.items.length).to eq(2)
+          expect(calls.items.first).to be_a(described_class)
+          expect(calls.items.first.call_id).to eq(5780678246121472)
+          expect(calls.items.first.direction).to eq('outbound')
+          expect(calls.items.first.state).to eq('calling')
+          expect(calls.items.last.call_id).to eq(5780678246121473)
+          expect(calls.items.last.direction).to eq('inbound')
+          expect(calls.items.last.state).to eq('completed')
         end
 
         it 'passes query parameters to API' do
@@ -187,24 +187,26 @@ RSpec.describe Dialpad::Call do
       end
 
       context 'with no calls' do
-        it 'returns empty array when items is blank' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
           stub_request(:get, "#{base_url}/call")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
 
           calls = described_class.list
 
-          expect(calls).to eq([])
+          expect(calls).to be_a(Dialpad::PaginatedResponse)
+          expect(calls.items).to eq([])
         end
 
-        it 'returns empty array when items is nil' do
+        it 'returns PaginatedResponse with empty items when items is nil' do
           stub_request(:get, "#{base_url}/call")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
 
           calls = described_class.list
 
-          expect(calls).to eq([])
+          expect(calls).to be_a(Dialpad::PaginatedResponse)
+          expect(calls.items).to eq([])
         end
       end
     end

@@ -73,18 +73,18 @@ RSpec.describe Dialpad::Contact do
           }
         end
 
-        it 'returns an array of contacts' do
+        it 'returns a PaginatedResponse with items' do
           stub_request(:get, "#{base_url}/contacts")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: contacts_data.to_json, headers: { 'Content-Type' => 'application/json' })
 
           contacts = described_class.list
 
-          expect(contacts).to be_an(Array)
-          expect(contacts.length).to eq(2)
-          expect(contacts.first).to be_a(described_class)
-          expect(contacts.first.id).to eq('123')
-          expect(contacts.first.first_name).to eq('John')
+          expect(contacts).to be_a(Dialpad::PaginatedResponse)
+          expect(contacts.items.length).to eq(2)
+          expect(contacts.items.first).to be_a(described_class)
+          expect(contacts.items.first.id).to eq('123')
+          expect(contacts.items.first.first_name).to eq('John')
         end
 
         it 'passes query parameters' do
@@ -101,24 +101,26 @@ RSpec.describe Dialpad::Contact do
       end
 
       context 'with no contacts' do
-        it 'returns empty array when items is blank' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
           stub_request(:get, "#{base_url}/contacts")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
 
           contacts = described_class.list
 
-          expect(contacts).to eq([])
+          expect(contacts).to be_a(Dialpad::PaginatedResponse)
+          expect(contacts.items).to eq([])
         end
 
-        it 'returns empty array when items is nil' do
+        it 'returns PaginatedResponse with empty items when items is nil' do
           stub_request(:get, "#{base_url}/contacts")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
 
           contacts = described_class.list
 
-          expect(contacts).to eq([])
+          expect(contacts).to be_a(Dialpad::PaginatedResponse)
+          expect(contacts.items).to eq([])
         end
       end
     end
