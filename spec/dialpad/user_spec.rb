@@ -45,7 +45,15 @@ RSpec.describe Dialpad::User do
               'is_default_voicemail' => true,
               'name' => 'default',
               'voicemail_notifications_enabled' => true
-            }
+            },
+            'group_details' => [
+              {
+                'do_not_disturb' => false,
+                'group_id' => '6178959861465088',
+                'group_type' => 'callcenter',
+                'role' => 'operator'
+              }
+            ]
           }
         end
 
@@ -88,6 +96,7 @@ RSpec.describe Dialpad::User do
       context 'with users' do
         let(:users_data) do
           {
+            'cursor' => 'user_cursor_456',
             'items' => [
               {
                 'id' => '1111222233334444',
@@ -109,19 +118,47 @@ RSpec.describe Dialpad::User do
           }
         end
 
-        it 'returns an array of users' do
+        it 'returns a PaginatedResponse with users' do
           stub_request(:get, "#{base_url}/users")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: users_data.to_json, headers: { 'Content-Type' => 'application/json' })
 
-          users = described_class.list[:items]
+          result = described_class.list
 
-          expect(users).to be_an(Array)
-          expect(users.length).to eq(2)
-          expect(users.first).to be_a(described_class)
-          expect(users.first.id).to eq('1111222233334444')
-          expect(users.first.first_name).to eq('John')
-          expect(users.first.is_admin).to be true
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to eq('user_cursor_456')
+          expect(result.items).to be_an(Array)
+          expect(result.items.length).to eq(2)
+          expect(result.items.first).to be_a(described_class)
+          expect(result.items.first.id).to eq('1111222233334444')
+          expect(result.items.first.first_name).to eq('John')
+          expect(result.items.first.is_admin).to be true
+        end
+      end
+
+      context 'with no users' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
+          stub_request(:get, "#{base_url}/users")
+            .with(headers: { 'Authorization' => "Bearer #{token}" })
+            .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+          result = described_class.list
+
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to be_nil
+          expect(result.items).to eq([])
+        end
+
+        it 'returns PaginatedResponse with empty items when items is nil' do
+          stub_request(:get, "#{base_url}/users")
+            .with(headers: { 'Authorization' => "Bearer #{token}" })
+            .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
+
+          result = described_class.list
+
+          expect(result).to be_a(Dialpad::PaginatedResponse)
+          expect(result.cursor).to be_nil
+          expect(result.items).to eq([])
         end
       end
     end
@@ -348,7 +385,15 @@ RSpec.describe Dialpad::User do
           is_default_voicemail: true,
           name: 'default',
           voicemail_notifications_enabled: true
-        }
+        },
+        group_details: [
+          {
+            do_not_disturb: false,
+            group_id: '6178959861465088',
+            group_type: 'callcenter',
+            role: 'operator'
+          }
+        ]
       }
     end
 
@@ -408,6 +453,14 @@ RSpec.describe Dialpad::User do
         expect(user.admin_office_ids).to eq(['1234567890123456'])
         expect(user.emails).to eq(['john.doe@example.com'])
         expect(user.phone_numbers).to eq(['+15551234567'])
+        expect(user.group_details).to eq([
+                                           {
+                                             do_not_disturb: false,
+                                             group_id: '6178959861465088',
+                                             group_type: 'callcenter',
+                                             role: 'operator'
+                                           }
+                                         ])
       end
     end
 
@@ -441,6 +494,7 @@ RSpec.describe Dialpad::User do
         expect(user).to respond_to(:date_added)
         expect(user).to respond_to(:date_first_login)
         expect(user).to respond_to(:voicemail)
+        expect(user).to respond_to(:group_details)
       end
 
       it 'raises NoMethodError for undefined attributes' do

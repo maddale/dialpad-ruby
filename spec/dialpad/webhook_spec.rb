@@ -85,20 +85,20 @@ RSpec.describe Dialpad::Webhook do
           }
         end
 
-        it 'returns an array of webhooks' do
+        it 'returns a PaginatedResponse with items' do
           stub_request(:get, "#{base_url}/webhooks")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: webhooks_data.to_json, headers: { 'Content-Type' => 'application/json' })
 
           webhooks = described_class.list
 
-          expect(webhooks).to be_an(Array)
-          expect(webhooks.length).to eq(2)
-          expect(webhooks.first).to be_a(described_class)
-          expect(webhooks.first.id).to eq('5159136949157888')
-          expect(webhooks.first.hook_url).to eq('https://example.com/webhooks/dialpad/call')
-          expect(webhooks.last.id).to eq('5159136949157889')
-          expect(webhooks.last.hook_url).to eq('https://example.com/webhooks/dialpad/contact')
+          expect(webhooks).to be_a(Dialpad::PaginatedResponse)
+          expect(webhooks.items.length).to eq(2)
+          expect(webhooks.items.first).to be_a(described_class)
+          expect(webhooks.items.first.id).to eq('5159136949157888')
+          expect(webhooks.items.first.hook_url).to eq('https://example.com/webhooks/dialpad/call')
+          expect(webhooks.items.last.id).to eq('5159136949157889')
+          expect(webhooks.items.last.hook_url).to eq('https://example.com/webhooks/dialpad/contact')
         end
 
         it 'passes query parameters to API' do
@@ -115,24 +115,26 @@ RSpec.describe Dialpad::Webhook do
       end
 
       context 'with no webhooks' do
-        it 'returns empty array when items is blank' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
           stub_request(:get, "#{base_url}/webhooks")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
 
           webhooks = described_class.list
 
-          expect(webhooks).to eq([])
+          expect(webhooks).to be_a(Dialpad::PaginatedResponse)
+          expect(webhooks.items).to eq([])
         end
 
-        it 'returns empty array when items is nil' do
+        it 'returns PaginatedResponse with empty items when items is nil' do
           stub_request(:get, "#{base_url}/webhooks")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
 
           webhooks = described_class.list
 
-          expect(webhooks).to eq([])
+          expect(webhooks).to be_a(Dialpad::PaginatedResponse)
+          expect(webhooks.items).to eq([])
         end
       end
     end

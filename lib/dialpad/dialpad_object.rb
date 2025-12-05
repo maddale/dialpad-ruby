@@ -1,8 +1,24 @@
 module Dialpad
+  PaginatedResponse = Struct.new(:cursor, :items)
+
   class DialpadObject
     class RequiredAttributeError < Dialpad::APIError; end
 
     attr_reader :attributes
+
+    class << self
+      def paginated_response_from(response)
+        cursor = response.body['cursor']
+        items =
+          if response.body['items'].nil?
+            []
+          else
+            response.body['items'].map { |item| new(item) }
+          end
+
+        PaginatedResponse.new(cursor, items)
+      end
+    end
 
     def initialize(attributes = {})
       @attributes =

@@ -103,21 +103,21 @@ RSpec.describe Dialpad::Subscriptions::CallEvent do
           }
         end
 
-        it 'returns an array of call event subscriptions' do
+        it 'returns a PaginatedResponse with items' do
           stub_request(:get, "#{base_url}/subscriptions/call")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: call_events_data.to_json, headers: { 'Content-Type' => 'application/json' })
 
           call_events = described_class.list
 
-          expect(call_events).to be_an(Array)
-          expect(call_events.length).to eq(2)
-          expect(call_events.first).to be_a(described_class)
-          expect(call_events.first.id).to eq('4614441776955392')
-          expect(call_events.first.call_states).to eq(['calling'])
-          expect(call_events.last.id).to eq('4614441776955393')
-          expect(call_events.last.call_states).to eq(['completed', 'failed'])
-          expect(call_events.last.group_calls_only).to be true
+          expect(call_events).to be_a(Dialpad::PaginatedResponse)
+          expect(call_events.items.length).to eq(2)
+          expect(call_events.items.first).to be_a(described_class)
+          expect(call_events.items.first.id).to eq('4614441776955392')
+          expect(call_events.items.first.call_states).to eq(['calling'])
+          expect(call_events.items.last.id).to eq('4614441776955393')
+          expect(call_events.items.last.call_states).to eq(['completed', 'failed'])
+          expect(call_events.items.last.group_calls_only).to be true
         end
 
         it 'passes query parameters to API' do
@@ -134,24 +134,26 @@ RSpec.describe Dialpad::Subscriptions::CallEvent do
       end
 
       context 'with no call event subscriptions' do
-        it 'returns empty array when items is blank' do
+        it 'returns PaginatedResponse with empty items when items is blank' do
           stub_request(:get, "#{base_url}/subscriptions/call")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: { 'items' => [] }.to_json, headers: { 'Content-Type' => 'application/json' })
 
           call_events = described_class.list
 
-          expect(call_events).to eq([])
+          expect(call_events).to be_a(Dialpad::PaginatedResponse)
+          expect(call_events.items).to eq([])
         end
 
-        it 'returns empty array when items is nil' do
+        it 'returns PaginatedResponse with empty items when items is nil' do
           stub_request(:get, "#{base_url}/subscriptions/call")
             .with(headers: { 'Authorization' => "Bearer #{token}" })
             .to_return(status: 200, body: {}.to_json, headers: { 'Content-Type' => 'application/json' })
 
           call_events = described_class.list
 
-          expect(call_events).to eq([])
+          expect(call_events).to be_a(Dialpad::PaginatedResponse)
+          expect(call_events.items).to eq([])
         end
       end
     end

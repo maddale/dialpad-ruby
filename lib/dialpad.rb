@@ -12,6 +12,7 @@ require 'dialpad/dialpad_object'
 require 'dialpad/webhook'
 
 require 'dialpad/call'
+require 'dialpad/call_center'
 require 'dialpad/contact'
 require 'dialpad/department'
 require 'dialpad/subscriptions/call_event'

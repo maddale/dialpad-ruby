@@ -25,9 +25,7 @@ module Dialpad
         # https://developers.dialpad.com/reference/webhook_contact_event_subscriptionlist
         def list(params = {})
           response = Dialpad.client.get('subscriptions/contact', params)
-          return [] if response.body['items'].nil?
-
-          response.body['items'].map { |item| new(item) }
+          paginated_response_from(response)
         end
 
         # https://developers.dialpad.com/reference/webhook_contact_event_subscriptioncreate
